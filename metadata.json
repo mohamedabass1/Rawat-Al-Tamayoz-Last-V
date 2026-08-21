@@ -1,0 +1,6 @@
+{
+  "name": "روعة التميز",
+  "description": "معرض رقمي فاخر للحلول الخارجية والمظلات والبرجولات مع لوحة تحكم CMS لإدارة المحتوى والاستفسار المباشر عبر واتساب.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
