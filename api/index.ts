@@ -240,9 +240,11 @@ app.post(
       }
 
       if (newPassword.length < 6) {
-        res.status(400).json({
-          error: "يجب أن تتكون كلمة المرور الجديدة من 6 خانات على الأقل",
-        });
+        res
+          .status(400)
+          .json({
+            error: "يجب أن تتكون كلمة المرور الجديدة من 6 خانات على الأقل",
+          });
         return;
       }
 
@@ -522,11 +524,11 @@ app.put("/api/admin/settings", requireAuth, async (req, res) => {
   }
 });
 
-// Image Uploads (Multi-part and Base64)
+// Image Uploads (Multi-part and Base64) - Supports 'files', 'images', and single/multiple uploads
 app.post(
   "/api/admin/upload",
   requireAuth,
-  uploadMiddleware.array("images", 10),
+  uploadMiddleware.any(),
   async (req, res) => {
     try {
       const files = req.files as Express.Multer.File[];
@@ -548,6 +550,21 @@ app.post(
       console.error("File upload error:", err);
       res.status(500).json({ error: err.message || "حدث خطأ أثناء رفع الملف" });
     }
+  },
+);
+
+// Global Error Handler for Serverless
+app.use(
+  (
+    err: any,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    console.error("Unhandled serverless error:", err);
+    res
+      .status(500)
+      .json({ error: err?.message || "حدث خطأ غير متوقع في الخادم" });
   },
 );
 
