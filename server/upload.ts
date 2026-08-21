@@ -27,12 +27,19 @@ function getUploadDir(): string {
   }
 }
 
-const ALLOWED_MIMES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-  "image/svg+xml",
+const ALLOWED_MIME_PREFIXES = ["image/"];
+const ALLOWED_IMAGE_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".avif",
+  ".svg",
+  ".gif",
+  ".heic",
+  ".heif",
+  ".bmp",
+  ".tiff",
 ];
 
 // Memory storage for fast buffer access (compatible with both Supabase Storage and local fallback)
@@ -41,15 +48,22 @@ const storage = multer.memoryStorage();
 export const uploadMiddleware = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10 MB limit per file
+    fileSize: 50 * 1024 * 1024, // 50 MB limit per file (handles 4K / mobile camera photos)
   },
   fileFilter: (_req, file, cb) => {
-    if (ALLOWED_MIMES.includes(file.mimetype)) {
+    const isImageMime =
+      file.mimetype &&
+      (ALLOWED_MIME_PREFIXES.some((p) => file.mimetype.startsWith(p)) ||
+        file.mimetype === "application/octet-stream");
+    const ext = path.extname(file.originalname || "").toLowerCase();
+    const hasImageExt = ALLOWED_IMAGE_EXTENSIONS.includes(ext);
+
+    if (isImageMime || hasImageExt) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          "نوع الملف غير مدعوم. الأنواع المسموحة هي: JPG, PNG, WEBP, AVIF, SVG",
+          "نوع الملف غير مدعوم. يرجى اختيار ملف صورة صالح (JPG, PNG, WEBP, HEIC, SVG).",
         ),
       );
     }
@@ -101,14 +115,27 @@ export async function processUploadedFile(file: Express.Multer.File): Promise<{
   const targetDir = getUploadDir();
   const targetPath = path.join(targetDir, safeName);
 
+  let localUrl = `/uploads/${safeName}`;
+  let writeSuccess = false;
+
   try {
     fs.writeFileSync(targetPath, file.buffer);
+    writeSuccess = true;
   } catch (err) {
-    console.error("Failed to write uploaded file locally:", err);
+    console.error(
+      "Failed to write uploaded file locally, using data URI fallback:",
+      err,
+    );
+  }
+
+  // If on a stateless serverless instance without Supabase and write failed, fallback to base64 Data URL
+  if (!writeSuccess && process.env.VERCEL) {
+    const base64Data = file.buffer.toString("base64");
+    localUrl = `data:${file.mimetype};base64,${base64Data}`;
   }
 
   return {
-    url: `/uploads/${safeName}`,
+    url: localUrl,
     originalName: file.originalname,
     size: file.size,
     mimeType: file.mimetype,

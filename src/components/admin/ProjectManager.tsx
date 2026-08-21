@@ -1,16 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import type { Project } from '../../types';
-import { api } from '../../lib/api';
-import { useToast } from '../../context/ToastContext';
-import { ConfirmDialog } from './ConfirmDialog';
-import { Plus, Edit2, Trash2, Upload, Image as ImageIcon, MapPin, X, Loader2, Briefcase } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect } from "react";
+import type { Project } from "../../types";
+import { api } from "../../lib/api";
+import { useToast } from "../../context/ToastContext";
+import { ConfirmDialog } from "./ConfirmDialog";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Upload,
+  Image as ImageIcon,
+  MapPin,
+  X,
+  Loader2,
+  Briefcase,
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 interface ProjectManagerProps {
   onRefreshStats: () => void;
 }
 
-export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }) => {
+export const ProjectManager: React.FC<ProjectManagerProps> = ({
+  onRefreshStats,
+}) => {
   const { showToast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +32,10 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   // Form State
-  const [formTitle, setFormTitle] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formCategoryName, setFormCategoryName] = useState('');
-  const [formLocation, setFormLocation] = useState('');
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formCategoryName, setFormCategoryName] = useState("");
+  const [formLocation, setFormLocation] = useState("");
   const [formImages, setFormImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -37,7 +49,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
       const data = await api.getAdminProjects();
       setProjects(data);
     } catch (err: any) {
-      showToast(err.message || 'فشل جلب المشاريع', 'error');
+      showToast(err.message || "فشل جلب المشاريع", "error");
     } finally {
       setLoading(false);
     }
@@ -49,10 +61,10 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
 
   const handleOpenCreate = () => {
     setEditingProject(null);
-    setFormTitle('');
-    setFormDescription('');
-    setFormCategoryName('');
-    setFormLocation('');
+    setFormTitle("");
+    setFormDescription("");
+    setFormCategoryName("");
+    setFormLocation("");
     setFormImages([]);
     setIsModalOpen(true);
   };
@@ -60,9 +72,9 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
   const handleOpenEdit = (project: Project) => {
     setEditingProject(project);
     setFormTitle(project.title);
-    setFormDescription(project.description || '');
-    setFormCategoryName(project.categoryName || '');
-    setFormLocation(project.location || '');
+    setFormDescription(project.description || "");
+    setFormCategoryName(project.categoryName || "");
+    setFormLocation(project.location || "");
     setFormImages(project.images ? [...project.images] : []);
     setIsModalOpen(true);
   };
@@ -70,29 +82,31 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
   const handleUploadImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    const fileList = Array.from(files) as File[];
+    e.target.value = ""; // Reset input to allow re-selection on mobile
 
     setIsUploading(true);
     try {
-      const uploadedUrls = await api.uploadFiles(Array.from(files));
+      const uploadedUrls = await api.uploadFiles(fileList);
       if (uploadedUrls && uploadedUrls.length > 0) {
-        setFormImages(prev => [...prev, ...uploadedUrls]);
-        showToast(`تم رفع ${uploadedUrls.length} صورة للمشروع`, 'success');
+        setFormImages((prev) => [...prev, ...uploadedUrls]);
+        showToast(`تم رفع ${uploadedUrls.length} صورة للمشروع`, "success");
       }
     } catch (err: any) {
-      showToast(err.message || 'فشل رفع الصور', 'error');
+      showToast(err.message || "فشل رفع الصور", "error");
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleRemoveImage = (index: number) => {
-    setFormImages(prev => prev.filter((_, i) => i !== index));
+    setFormImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim()) {
-      showToast('يرجى إدخال عنوان المشروع', 'warning');
+      showToast("يرجى إدخال عنوان المشروع", "warning");
       return;
     }
 
@@ -103,22 +117,22 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
         description: formDescription.trim(),
         categoryName: formCategoryName.trim(),
         location: formLocation.trim(),
-        images: formImages
+        images: formImages,
       };
 
       if (editingProject) {
         await api.updateProject(editingProject.id, payload);
-        showToast('تم تحديث بيانات المشروع بنجاح', 'success');
+        showToast("تم تحديث بيانات المشروع بنجاح", "success");
       } else {
         await api.createProject(payload);
-        showToast('تمت إضافة المشروع الجديد بنجاح', 'success');
+        showToast("تمت إضافة المشروع الجديد بنجاح", "success");
       }
 
       setIsModalOpen(false);
       fetchProjects();
       onRefreshStats();
     } catch (err: any) {
-      showToast(err.message || 'فشل حفظ المشروع', 'error');
+      showToast(err.message || "فشل حفظ المشروع", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -128,12 +142,12 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
     if (!projectToDelete) return;
     try {
       await api.deleteProject(projectToDelete.id);
-      showToast('تم حذف المشروع بنجاح', 'success');
+      showToast("تم حذف المشروع بنجاح", "success");
       setProjectToDelete(null);
       fetchProjects();
       onRefreshStats();
     } catch (err: any) {
-      showToast(err.message || 'فشل حذف المشروع', 'error');
+      showToast(err.message || "فشل حذف المشروع", "error");
     }
   };
 
@@ -166,7 +180,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
         </div>
       ) : projects.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map(project => (
+          {projects.map((project) => (
             <div
               key={project.id}
               className="p-5 rounded-2xl bg-white dark:bg-[#131D18] border border-[#C5A880]/20 flex flex-col justify-between space-y-4"
@@ -174,7 +188,12 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
               <div>
                 <div className="aspect-[16/10] rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800 mb-3 border border-black/5 dark:border-white/5">
                   {project.images?.[0] ? (
-                    <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    <img
+                      src={project.images[0]}
+                      alt={project.title}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-stone-400">
                       <Briefcase className="w-6 h-6" />
@@ -260,7 +279,10 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[10500] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="fixed inset-0" onClick={() => setIsModalOpen(false)} />
+            <div
+              className="fixed inset-0"
+              onClick={() => setIsModalOpen(false)}
+            />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -270,7 +292,9 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-[#12261E] dark:text-[#FAF8F5]">
-                  {editingProject ? 'تعديل بيانات المشروع' : 'إضافة مشروع منفذ جديد'}
+                  {editingProject
+                    ? "تعديل بيانات المشروع"
+                    : "إضافة مشروع منفذ جديد"}
                 </h3>
                 <button
                   type="button"
@@ -289,7 +313,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
                   <input
                     type="text"
                     value={formTitle}
-                    onChange={e => setFormTitle(e.target.value)}
+                    onChange={(e) => setFormTitle(e.target.value)}
                     placeholder="مثال: تركيب مظلات فلل بحي النرجس..."
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#0E1512] border border-[#C5A880]/30 focus:border-[#C5A880] text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
                     required
@@ -304,7 +328,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
                     <input
                       type="text"
                       value={formCategoryName}
-                      onChange={e => setFormCategoryName(e.target.value)}
+                      onChange={(e) => setFormCategoryName(e.target.value)}
                       placeholder="مظلات سيارات / برجولات..."
                       className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#0E1512] border border-[#C5A880]/30 focus:border-[#C5A880] text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
                     />
@@ -317,7 +341,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
                     <input
                       type="text"
                       value={formLocation}
-                      onChange={e => setFormLocation(e.target.value)}
+                      onChange={(e) => setFormLocation(e.target.value)}
                       placeholder="الرياض / جدة..."
                       className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#0E1512] border border-[#C5A880]/30 focus:border-[#C5A880] text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
                     />
@@ -331,7 +355,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
                   <textarea
                     rows={3}
                     value={formDescription}
-                    onChange={e => setFormDescription(e.target.value)}
+                    onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="تفاصيل عن المواد المستخدمة والمساحة المنفذة..."
                     className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#0E1512] border border-[#C5A880]/30 focus:border-[#C5A880] text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none resize-none"
                   />
@@ -364,8 +388,16 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
                   {formImages.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 mt-3">
                       {formImages.map((url, idx) => (
-                        <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-black/10">
-                          <img src={url} alt="معاينة" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <div
+                          key={idx}
+                          className="relative aspect-video rounded-lg overflow-hidden border border-black/10"
+                        >
+                          <img
+                            src={url}
+                            alt="معاينة"
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(idx)}
@@ -392,7 +424,7 @@ export const ProjectManager: React.FC<ProjectManagerProps> = ({ onRefreshStats }
                     disabled={isSubmitting}
                     className="px-6 py-2.5 rounded-xl bg-[#12261E] dark:bg-[#C5A880] text-white dark:text-[#0D1411] font-bold text-sm shadow-md hover:opacity-90 disabled:opacity-50"
                   >
-                    {isSubmitting ? 'جارٍ الحفظ...' : 'حفظ المشروع'}
+                    {isSubmitting ? "جارٍ الحفظ..." : "حفظ المشروع"}
                   </button>
                 </div>
               </form>

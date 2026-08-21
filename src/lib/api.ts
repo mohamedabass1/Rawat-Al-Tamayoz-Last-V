@@ -5,6 +5,7 @@ import type {
   SiteSettings,
   DashboardStats,
 } from "../types";
+import { optimizeImageForUpload } from "./imageOptimizer";
 
 const TOKEN_KEY = "rawat_admin_token";
 
@@ -190,10 +191,15 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  // Upload
+  // Upload (with automatic mobile optimization & compression)
   uploadFiles: async (files: File[]): Promise<string[]> => {
+    // Concurrently optimize images for mobile bandwidth and standard formats
+    const processedFiles = await Promise.all(
+      files.map((f) => optimizeImageForUpload(f)),
+    );
+
     const formData = new FormData();
-    files.forEach((file) => {
+    processedFiles.forEach((file) => {
       formData.append("files", file);
     });
     const res = await request<{

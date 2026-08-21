@@ -1,17 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import type { SiteSettings, WhyUsItem } from '../../types';
-import { api } from '../../lib/api';
-import { useToast } from '../../context/ToastContext';
-import { 
-  Building2, Phone, MessageSquare, Mail, MapPin, Globe, 
-  Upload, Trash2, Save, Loader2, Sparkles, ShieldCheck, Plus, X 
-} from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import type { SiteSettings, WhyUsItem } from "../../types";
+import { api } from "../../lib/api";
+import { useToast } from "../../context/ToastContext";
+import {
+  Building2,
+  Phone,
+  MessageSquare,
+  Mail,
+  MapPin,
+  Globe,
+  Upload,
+  Trash2,
+  Save,
+  Loader2,
+  Sparkles,
+  ShieldCheck,
+  Plus,
+  X,
+} from "lucide-react";
 
 interface SettingsManagerProps {
   onSettingsUpdated: (newSettings: SiteSettings) => void;
 }
 
-export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpdated }) => {
+export const SettingsManager: React.FC<SettingsManagerProps> = ({
+  onSettingsUpdated,
+}) => {
   const { showToast } = useToast();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,20 +33,20 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Form Fields
-  const [companyName, setCompanyName] = useState('');
-  const [tagline, setTagline] = useState('');
-  const [companyBio, setCompanyBio] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [defaultWhatsappMessage, setDefaultWhatsappMessage] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [instagram, setInstagram] = useState('');
-  const [tiktok, setTiktok] = useState('');
-  const [twitter, setTwitter] = useState('');
-  const [snapchat, setSnapchat] = useState('');
-  const [aboutStory, setAboutStory] = useState('');
+  const [companyName, setCompanyName] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [companyBio, setCompanyBio] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [defaultWhatsappMessage, setDefaultWhatsappMessage] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [snapchat, setSnapchat] = useState("");
+  const [aboutStory, setAboutStory] = useState("");
   const [whyUsItems, setWhyUsItems] = useState<WhyUsItem[]>([]);
 
   useEffect(() => {
@@ -41,23 +55,23 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
       try {
         const data = await api.getSettings();
         setSettings(data);
-        setCompanyName(data.companyName || '');
-        setTagline(data.tagline || '');
-        setCompanyBio(data.companyBio || '');
-        setLogoUrl(data.logoUrl || '');
-        setWhatsappNumber(data.whatsappNumber || '');
-        setDefaultWhatsappMessage(data.defaultWhatsappMessage || '');
-        setPhoneNumber(data.phoneNumber || '');
-        setEmail(data.email || '');
-        setAddress(data.address || '');
-        setInstagram(data.socialLinks?.instagram || '');
-        setTiktok(data.socialLinks?.tiktok || '');
-        setTwitter(data.socialLinks?.twitter || '');
-        setSnapchat(data.socialLinks?.snapchat || '');
-        setAboutStory(data.aboutStory || '');
+        setCompanyName(data.companyName || "");
+        setTagline(data.tagline || "");
+        setCompanyBio(data.companyBio || "");
+        setLogoUrl(data.logoUrl || "");
+        setWhatsappNumber(data.whatsappNumber || "");
+        setDefaultWhatsappMessage(data.defaultWhatsappMessage || "");
+        setPhoneNumber(data.phoneNumber || "");
+        setEmail(data.email || "");
+        setAddress(data.address || "");
+        setInstagram(data.socialLinks?.instagram || "");
+        setTiktok(data.socialLinks?.tiktok || "");
+        setTwitter(data.socialLinks?.twitter || "");
+        setSnapchat(data.socialLinks?.snapchat || "");
+        setAboutStory(data.aboutStory || "");
         setWhyUsItems(data.whyUsItems || []);
       } catch (err: any) {
-        showToast(err.message || 'فشل جلب الإعدادات', 'error');
+        showToast(err.message || "فشل جلب الإعدادات", "error");
       } finally {
         setLoading(false);
       }
@@ -68,34 +82,47 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
   const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    const fileList = Array.from(files) as File[];
+    e.target.value = ""; // Reset input to allow re-selection on mobile
 
     setIsUploadingLogo(true);
     try {
-      const urls = await api.uploadFiles(Array.from(files));
+      const urls = await api.uploadFiles(fileList);
       if (urls && urls.length > 0) {
         setLogoUrl(urls[0]);
-        showToast('تم رفع الشعار بنجاح', 'success');
+        showToast("تم رفع الشعار بنجاح", "success");
       }
     } catch (err: any) {
-      showToast(err.message || 'فشل رفع الشعار', 'error');
+      showToast(err.message || "فشل رفع الشعار", "error");
     } finally {
       setIsUploadingLogo(false);
     }
   };
 
-  const handleUpdateWhyUs = (index: number, field: keyof WhyUsItem, value: string) => {
-    setWhyUsItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+  const handleUpdateWhyUs = (
+    index: number,
+    field: keyof WhyUsItem,
+    value: string,
+  ) => {
+    setWhyUsItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
+    );
   };
 
   const handleAddWhyUs = () => {
-    setWhyUsItems(prev => [
+    setWhyUsItems((prev) => [
       ...prev,
-      { id: `why-${Date.now()}`, title: 'ميزة جديدة', description: 'اكتب وصف الميزة هنا...', icon: 'ShieldCheck' }
+      {
+        id: `why-${Date.now()}`,
+        title: "ميزة جديدة",
+        description: "اكتب وصف الميزة هنا...",
+        icon: "ShieldCheck",
+      },
     ]);
   };
 
   const handleRemoveWhyUs = (index: number) => {
-    setWhyUsItems(prev => prev.filter((_, i) => i !== index));
+    setWhyUsItems((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -118,16 +145,16 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
           instagram: instagram.trim(),
           tiktok: tiktok.trim(),
           twitter: twitter.trim(),
-          snapchat: snapchat.trim()
-        }
+          snapchat: snapchat.trim(),
+        },
       };
 
       const updated = await api.updateSettings(payload);
       setSettings(updated);
       onSettingsUpdated(updated);
-      showToast('تم حفظ جميع إعدادات الموقع بنجاح', 'success');
+      showToast("تم حفظ جميع إعدادات الموقع بنجاح", "success");
     } catch (err: any) {
-      showToast(err.message || 'فشل حفظ الإعدادات', 'error');
+      showToast(err.message || "فشل حفظ الإعدادات", "error");
     } finally {
       setSaving(false);
     }
@@ -135,7 +162,10 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
 
   if (loading) {
     return (
-      <div className="p-12 text-center text-sm text-[#7B8F82] flex items-center justify-center gap-2" dir="rtl">
+      <div
+        className="p-12 text-center text-sm text-[#7B8F82] flex items-center justify-center gap-2"
+        dir="rtl"
+      >
         <Loader2 className="w-5 h-5 animate-spin" />
         <span>جارٍ تحميل الإعدادات...</span>
       </div>
@@ -151,7 +181,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             إعدادات وهوية مؤسسة روعة التميز
           </h2>
           <p className="text-xs text-[#5B6F62] dark:text-[#9FB2A5]">
-            تعديل بيانات التواصل المباشر، أرقام الواتساب، الشعار، ومحتوى صفحات الموقع.
+            تعديل بيانات التواصل المباشر، أرقام الواتساب، الشعار، ومحتوى صفحات
+            الموقع.
           </p>
         </div>
 
@@ -190,7 +221,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
               <input
                 type="text"
                 value={companyName}
-                onChange={e => setCompanyName(e.target.value)}
+                onChange={(e) => setCompanyName(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
                 required
               />
@@ -203,7 +234,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
               <input
                 type="text"
                 value={tagline}
-                onChange={e => setTagline(e.target.value)}
+                onChange={(e) => setTagline(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               />
             </div>
@@ -215,7 +246,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
               <textarea
                 rows={3}
                 value={companyBio}
-                onChange={e => setCompanyBio(e.target.value)}
+                onChange={(e) => setCompanyBio(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none resize-none"
               />
             </div>
@@ -229,10 +260,15 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 flex flex-col items-center justify-center text-center space-y-3">
               {logoUrl ? (
                 <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-white dark:bg-[#1A2620] border border-[#C5A880]/30 p-2 flex items-center justify-center">
-                  <img src={logoUrl} alt="شعار المؤسسة" className="max-w-full max-h-full object-contain" referrerPolicy="no-referrer" />
+                  <img
+                    src={logoUrl}
+                    alt="شعار المؤسسة"
+                    className="max-w-full max-h-full object-contain"
+                    referrerPolicy="no-referrer"
+                  />
                   <button
                     type="button"
-                    onClick={() => setLogoUrl('')}
+                    onClick={() => setLogoUrl("")}
                     className="absolute top-1 left-1 p-1 rounded-md bg-rose-600 text-white"
                     title="حذف الشعار"
                   >
@@ -246,8 +282,12 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
               )}
 
               <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#16221C] border border-[#C5A880]/40 text-xs font-bold cursor-pointer hover:border-[#C5A880]">
-                {isUploadingLogo ? <Loader2 className="w-4 h-4 animate-spin text-[#A88758]" /> : <Upload className="w-4 h-4 text-[#A88758]" />}
-                <span>{logoUrl ? 'تغيير الشعار' : 'رفع صورة الشعار'}</span>
+                {isUploadingLogo ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-[#A88758]" />
+                ) : (
+                  <Upload className="w-4 h-4 text-[#A88758]" />
+                )}
+                <span>{logoUrl ? "تغيير الشعار" : "رفع صورة الشعار"}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -272,12 +312,14 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
           <div>
             <label className="block text-xs font-bold text-[#2A3B30] dark:text-[#D0E0D4] mb-1.5 flex items-center gap-1">
               <span>رقم الواتساب الرئيسي</span>
-              <span className="text-[11px] text-[#A88758] font-normal">(مع المفتاح الدولي e.g. +966500000000)</span>
+              <span className="text-[11px] text-[#A88758] font-normal">
+                (مع المفتاح الدولي e.g. +966500000000)
+              </span>
             </label>
             <input
               type="text"
               value={whatsappNumber}
-              onChange={e => setWhatsappNumber(e.target.value)}
+              onChange={(e) => setWhatsappNumber(e.target.value)}
               placeholder="+966500000000"
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -291,7 +333,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="text"
               value={phoneNumber}
-              onChange={e => setPhoneNumber(e.target.value)}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="0500000000"
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -305,7 +347,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="info@rawataltamayuz.com"
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -319,7 +361,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="text"
               value={address}
-              onChange={e => setAddress(e.target.value)}
+              onChange={(e) => setAddress(e.target.value)}
               placeholder="المملكة العربية السعودية - الرياض"
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
             />
@@ -333,7 +375,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
           <input
             type="text"
             value={defaultWhatsappMessage}
-            onChange={e => setDefaultWhatsappMessage(e.target.value)}
+            onChange={(e) => setDefaultWhatsappMessage(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
           />
         </div>
@@ -354,7 +396,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="url"
               value={instagram}
-              onChange={e => setInstagram(e.target.value)}
+              onChange={(e) => setInstagram(e.target.value)}
               placeholder="https://instagram.com/..."
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -368,7 +410,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="url"
               value={tiktok}
-              onChange={e => setTiktok(e.target.value)}
+              onChange={(e) => setTiktok(e.target.value)}
               placeholder="https://tiktok.com/@..."
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -382,7 +424,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="url"
               value={twitter}
-              onChange={e => setTwitter(e.target.value)}
+              onChange={(e) => setTwitter(e.target.value)}
               placeholder="https://x.com/..."
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -396,7 +438,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
             <input
               type="url"
               value={snapchat}
-              onChange={e => setSnapchat(e.target.value)}
+              onChange={(e) => setSnapchat(e.target.value)}
               placeholder="https://snapchat.com/add/..."
               className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none"
               dir="ltr"
@@ -419,7 +461,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
           <textarea
             rows={4}
             value={aboutStory}
-            onChange={e => setAboutStory(e.target.value)}
+            onChange={(e) => setAboutStory(e.target.value)}
             placeholder="اكتب نبذة عن تاريخ المؤسسة وخبرتها في تنفيذ المظلات والسواتر..."
             className="w-full px-4 py-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#0E1512] border border-[#C5A880]/30 text-sm text-[#12261E] dark:text-[#FAF8F5] outline-none resize-none leading-relaxed"
           />
@@ -466,7 +508,9 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
                 <input
                   type="text"
                   value={item.title}
-                  onChange={e => handleUpdateWhyUs(idx, 'title', e.target.value)}
+                  onChange={(e) =>
+                    handleUpdateWhyUs(idx, "title", e.target.value)
+                  }
                   className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#16221C] border border-[#C5A880]/30 text-xs font-bold text-[#12261E] dark:text-[#FAF8F5] outline-none"
                 />
               </div>
@@ -478,7 +522,9 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({ onSettingsUpda
                 <textarea
                   rows={2}
                   value={item.description}
-                  onChange={e => handleUpdateWhyUs(idx, 'description', e.target.value)}
+                  onChange={(e) =>
+                    handleUpdateWhyUs(idx, "description", e.target.value)
+                  }
                   className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#16221C] border border-[#C5A880]/30 text-xs text-[#12261E] dark:text-[#FAF8F5] outline-none resize-none"
                 />
               </div>
