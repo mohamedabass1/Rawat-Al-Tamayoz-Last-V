@@ -89,8 +89,12 @@ export function hashPassword(
 
 // Local cache helper
 function initLocalDb(): DatabaseSchema {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (err) {
+    // Read-only filesystem in serverless/Vercel environment
   }
 
   if (fs.existsSync(DB_FILE)) {
@@ -135,7 +139,11 @@ function initLocalDb(): DatabaseSchema {
     ],
   };
 
-  fs.writeFileSync(DB_FILE, JSON.stringify(initialDb, null, 2), "utf-8");
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(initialDb, null, 2), "utf-8");
+  } catch (err) {
+    // Read-only filesystem, keep in-memory
+  }
   return initialDb;
 }
 
@@ -150,7 +158,7 @@ function persistLocalDb(): void {
     fs.writeFileSync(tempFile, JSON.stringify(localCache, null, 2), "utf-8");
     fs.renameSync(tempFile, DB_FILE);
   } catch (error) {
-    console.error("Failed to persist local database:", error);
+    // Ignore write errors in read-only serverless environments
   }
 }
 
